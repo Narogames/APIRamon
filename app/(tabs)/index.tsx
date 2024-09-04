@@ -1,70 +1,83 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, TextInput, Button, Alert, StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const SignupScreen = () => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+    const handleSignup = async () => {
+        try {
+            const response = await fetch('https://taskhub-s37f.onrender.com/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Resposta da rede não foi ok: ${response.status} ${response.statusText}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                Alert.alert('Cadastro realizado com sucesso!');
+            } else {
+                Alert.alert('Falha no cadastro', 'Credenciais inválidas ou erro no servidor');
+            }
+        } catch (error) {
+            console.error('Erro:', error.message);
+            Alert.alert('Erro', `Ocorreu um erro: ${error.message}`);
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <TextInput
+                style={styles.input}
+                placeholder="Nome"
+                value={name}
+                onChangeText={setName}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="E-mail"
+                value={email}
+                onChangeText={setEmail}
+                autoCompleteType="email"
+                keyboardType="email-address"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Senha"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+            />
+            <Button title="Cadastrar" onPress={handleSignup} />
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: 16,
+    },
+    input: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginBottom: 12,
+        paddingHorizontal: 8,
+    },
 });
+
+export default SignupScreen;
